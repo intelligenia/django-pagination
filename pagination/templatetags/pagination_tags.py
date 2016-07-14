@@ -104,7 +104,8 @@ class AutoPaginateNode(template.Node):
         context['page_obj'] = page_obj
         return u''
 
-def paginate(context, window=DEFAULT_WINDOW):
+
+def paginate(context, window=DEFAULT_WINDOW, hashtag=''):
     """
     Renders the ``pagination/pagination.html`` template, resulting in a
     Digg-like display of the available pages, given the current page.  If there
@@ -133,10 +134,16 @@ def paginate(context, window=DEFAULT_WINDOW):
         paginator = context['paginator']
         page_obj = context['page_obj']
         page_range = paginator.page_range
+        # Calculate the record range in the current page for display.
+        records = {'first': 1 + (page_obj.number - 1) * paginator.per_page}
+        records['last'] = records['first'] + paginator.per_page - 1
+        if records['last'] + paginator.orphans >= paginator.count:
+            records['last'] = paginator.count
         # First and last are simply the first *n* pages and the last *n* pages,
         # where *n* is the current window size.
-        first = set(page_range[:window])
-        last = set(page_range[-window:])
+        page_range_list = list(page_range)
+        first = set(page_range_list[:window])
+        last = set(page_range_list[-window:])
         # Now we look around our current page, making sure that we don't wrap
         # around.
         current_start = page_obj.number-1-window
@@ -145,7 +152,7 @@ def paginate(context, window=DEFAULT_WINDOW):
         current_end = page_obj.number-1+window
         if current_end < 0:
             current_end = 0
-        current = set(page_range[current_start:current_end])
+        current = set(page_range_list[current_start:current_end])
         pages = []
         # If there's no overlap between the first set of pages and the current
         # set of pages, then there's a possible need for elusion.
@@ -199,9 +206,12 @@ def paginate(context, window=DEFAULT_WINDOW):
             differenced.sort()
             pages.extend(differenced)
         to_return = {
+            'MEDIA_URL': settings.MEDIA_URL,
             'pages': pages,
+            'records': records,
             'page_obj': page_obj,
             'paginator': paginator,
+            'hashtag': hashtag,
             'is_paginated': paginator.count > paginator.per_page,
         }
         if 'request' in context:

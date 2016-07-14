@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-version = '1.0.5'
+version = '1.8'
 
 LONG_DESCRIPTION = """
 How to use django-pagination
@@ -99,6 +99,13 @@ pagination tags.  Here's an overview:
     Determines whether an invalid page raises an ``Http404`` or just sets the
     ``invalid_page`` context variable.  ``True`` does the former and ``False``
     does the latter.
+
+Update to work with Django 1.9
+------------------
+
+Some fixes have been made by Diego J. Romero to make this package work
+under newer versions of Django, like the 1.9 one.
+
 """
 
 setup(
